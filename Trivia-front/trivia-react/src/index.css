@@ -6,7 +6,6 @@
   justify-content: center;
   min-height: 100vh;
   width: 100%;
-  background: linear-gradient(135deg, #0f0935, #1c0f4d);
   color: white;
   font-family: Arial, sans-serif;
   padding: 20px;
@@ -16,8 +15,12 @@
 /* Título */
 .index-container h1 {
   margin-bottom: 50px;
-  font-size: 48px;
+  font-size: 78px;
   text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 10px #00bcd4;
 }
 
 /* Contenedor de las cards */
