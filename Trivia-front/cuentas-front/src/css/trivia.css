@@ -1,0 +1,230 @@
+/* Global */
+.body {
+  background: linear-gradient(135deg, #0f0935, #1b0c57);
+  font-family: Arial, sans-serif;
+  color: white;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Contenedor principal */
+.trivia-container {
+  width: 100%;
+  max-width: 500px;
+  padding: 25px;
+  box-sizing: border-box;
+  background: rgba(32, 18, 77, 0.85);
+  border-radius: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Borde animado */
+.trivia-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 3px;
+  border-radius: 25px;
+  background: linear-gradient(45deg, #31d480, #3a2a73, #ff4c4c, #31d480);
+  background-size: 400% 400%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: borderAnimation 6s linear infinite;
+  z-index: 1;
+}
+
+/* Mantener contenido encima */
+.trivia-container > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Animación del borde */
+@keyframes borderAnimation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Top Bar */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-icon {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 2px solid #3a2a73;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 7px;
+  gap: 4px;
+}
+
+.menu-icon div {
+  width: 100%;
+  height: 3px;
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+/* Barra de progreso */
+.progress {
+  width: 50%;
+  height: 15px;
+  background: #3a2a73;
+  border-radius: 20px;
+  overflow: hidden;
+  margin: 0 10px;
+}
+
+.progress-fill {
+  width: 0;
+  height: 100%;
+  background: #31d480;
+  transition: width 0.5s ease-in-out;
+}
+
+/* Número de pregunta */
+.question-count {
+  width: 50px;
+  height: 50px;
+  border: 3px solid #3a2a73;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 20px;
+  background: #1b0c57;
+  color: #31d480;
+}
+
+/* Caja de pregunta */
+.question-box {
+  background: #20124d;
+  padding: 25px;
+  margin-top: 20px;
+  border-radius: 20px;
+  font-size: 22px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+/* Opciones */
+.option {
+  background: #2a1f5c;
+  padding: 18px;
+  margin-top: 15px;
+  border-radius: 25px;
+  font-size: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.option:hover {
+  transform: translateY(-5px);
+  background: #3a2a73;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+/* Correcto / Incorrecto */
+.correct {
+  background: #29c46a !important;
+}
+
+.wrong {
+  background: #ff4c4c !important;
+}
+
+/* Pantalla de finalización */
+.finished-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.finished-screen p {
+  margin-top: 10px;
+  font-size: 22px;
+}
+
+/* Botones finales con efecto neón */
+.finished-screen .restart-button,
+.finished-screen .index-button {
+  margin-top: 15px;
+  padding: 12px 30px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  background: linear-gradient(90deg, #31d480, #3a2a73, #ff4c4c, #31d480);
+  background-size: 300% 300%;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px #31d480, 0 0 40px #3a2a73, 0 0 60px #ff4c4c;
+  transition: all 0.4s ease;
+  animation: neonButton 3s ease infinite;
+}
+
+.finished-screen .restart-button:hover,
+.finished-screen .index-button:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 0 30px #31d480, 0 0 60px #3a2a73, 0 0 90px #ff4c4c;
+}
+
+/* Animación de neón */
+@keyframes neonButton {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Animación de aparición */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 550px) {
+  .trivia-container {
+    padding: 15px;
+  }
+
+  .question-box {
+    font-size: 20px;
+    padding: 20px;
+  }
+
+  .option {
+    font-size: 18px;
+    padding: 15px;
+  }
+
+  .finished-screen .restart-button,
+  .finished-screen .index-button {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+}

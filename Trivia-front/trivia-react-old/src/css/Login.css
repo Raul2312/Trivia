@@ -1,5 +1,5 @@
 /* --- Estilos Generales y Tipografía --- */
-body {
+.body {
     font-family: 'Poppins', sans-serif;
     background: #1a1a2e;
     display: flex;

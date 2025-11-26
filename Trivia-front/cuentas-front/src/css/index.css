@@ -1,0 +1,98 @@
+/* Pantalla completa */
+.index-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Título */
+.index-container h1 {
+  margin-bottom: 50px;
+  font-size: 78px;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.7);
+  margin-bottom: 1.5rem;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 10px #00bcd4;
+}
+
+/* Contenedor de las cards */
+.trivia-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+}
+
+/* Card de cada trivia */
+.trivia-card {
+  position: relative;
+  flex: 1 1 200px;
+  padding: 30px 40px;
+  background: #2a1f5c;
+  border-radius: 25px;
+  font-size: 24px;
+  text-align: center;
+  cursor: pointer;
+  color: white;
+  overflow: hidden;
+  z-index: 0;
+  transition: transform 0.3s ease;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+}
+
+/* Efecto de borde animado */
+.trivia-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    from 0deg,
+    #31d480,
+    #3a2a73,
+    #ff4c4c,
+    #31d480
+  );
+  animation: glowBorder 4s linear infinite;
+  transform: rotate(0deg);
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: -1;
+}
+
+/* Hover activa el borde y escala la card */
+.trivia-card:hover {
+  transform: translateY(-5px) scale(1.05);
+}
+
+.trivia-card:hover::before {
+  opacity: 1;
+}
+
+/* Fondo interno para que no se vea todo el gradiente */
+.trivia-card::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  background: #2a1f5c;
+  border-radius: 23px;
+  z-index: -1;
+}
+
+/* Animación de rotación del borde */
+@keyframes glowBorder {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

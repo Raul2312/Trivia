@@ -1,4 +1,4 @@
-import './login.css'
+import '../css/Login.css'
 import { useState } from 'react'
 
 export default function Login() {
