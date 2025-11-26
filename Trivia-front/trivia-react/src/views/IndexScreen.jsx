@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import './../css/index.css'
+import '../css/index.css'
 
 export default function IndexScreen() {
   const navigate = useNavigate();

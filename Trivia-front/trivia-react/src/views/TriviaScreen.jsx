@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; // <-- importar useNavigate
-import "./../css/trivia.css";
+import "../css/trivia.css";
 
 export default function TriviaScreen() {
   const navigate = useNavigate(); // <-- inicializar navigate
