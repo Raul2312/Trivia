@@ -6,8 +6,8 @@ return(
 
       <div className="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h3 className="fw-bold">Welcome, Aubrey Sabina!</h3>
-                <p className="text-muted">Effortlessly manage your finances with real-time insights.</p>
+                <h3 className="fw-bold">Bienvenido a TriviaFun</h3>
+                <p className="text-muted">Diviertete agregando campos :)</p>
             </div>
             <div className="d-flex align-items-center gap-3">
                 <i className="fa-regular fa-envelope fs-5"></i>

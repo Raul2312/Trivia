@@ -7,7 +7,9 @@ export default function Sidebar() {
                 <div className="menu-title">Main Menu</div>
                 <a href="/admin"><i className="fa-solid fa-chart-line me-2"></i> Dashboard</a>
                 <a href="/admin/users"><i className="fa-solid fa-users me-2"></i> Users</a>
-                <a href="/admin/accounts"><i className="fa-solid fa-credit-card me-2"></i> Cuentas</a>
+                <a href="/admin/trivias"><i className="fa-solid fa-credit-card me-2"></i>Trivias</a>
+                <a href="/admin/preguntas"><i className="fa-solid fa-credit-card me-2"></i> Preguntas</a>
+                 <a href="/admin/categorias"><i className="fa-solid fa-credit-card me-2"></i>Categorias</a>
                 
             </div>
 

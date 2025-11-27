@@ -7,8 +7,12 @@ use App\Http\Controllers\PreguntaController;
 use App\Http\Controllers\RespuestaController;
 use App\Http\Controllers\TriviaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 Route::post('/login',[AuthController::class,'login']);
+Route::get('/users', [UserController::class, 'index']);
+Route::apiResource('users', UserController::class);
+
 
 Route::middleware("jwt.auth")->group(function(){
 
