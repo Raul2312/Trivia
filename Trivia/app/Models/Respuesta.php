@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Respuesta extends Model
 {
-     protected $table = 'respuestas';
+    protected $table = 'respuestas';
 
     protected $fillable = [
         'pregunta_id',
@@ -14,7 +14,10 @@ class Respuesta extends Model
         'es_correcto',
     ];
 
-      public function preguntas(){
-        return $this->hasOne(Pregunta::class,'id','pregunta_id');
+    public function pregunta()
+    {
+        // Una respuesta pertenece a una pregunta
+        return $this->belongsTo(Pregunta::class, 'pregunta_id');
     }
 }
+

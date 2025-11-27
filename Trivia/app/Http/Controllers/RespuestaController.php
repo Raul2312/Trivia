@@ -7,114 +7,79 @@ use App\Models\Respuesta;
 
 class RespuestaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-          $data = Respuesta::with(['preguntas'])->get();
+        $data = Respuesta::with('pregunta')->get();
+
         return response()->json([
-            "status"=>"ok",
-            "data"=>$data
-
-
+            "status" => "ok",
+            "data" => $data
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-          $validated= $request->validate([
-            'pregunta_id'         => 'required|string|min:2',
-            'respuesta'  => 'required|string|min:2',
-            'es_correcto'  => 'required|boolean',
+        $validated = $request->validate([
+    'respuesta'  => 'required|string|min:2',
+    'es_correcto'   => 'required|boolean',
+    'pregunta_id'   => 'required|integer|exists:preguntas,id'
         ]);
-        $validated['user_id']=Auth::user()->id;
+
         $data = Respuesta::create($validated);
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos Insertado Correctamente",
-            "data"=>$data
 
+        return response()->json([
+            "status" => "ok",
+            "message" => "Respuesta guardada correctamente",
+            "data" => $data
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show($id)
     {
-          $data = Respuesta::find($id);
-        if($data){
+        $data = Respuesta::find($id);
+
+        if (!$data) {
             return response()->json([
-            "status"=>"ok",
-            "message"=>"Respuesta encontrada",
-            "data"=>$data
-            
-
-        ]);
+                "status" => "error",
+                "message" => "Respuesta no encontrada"
+            ], 404);
         }
-         return response()->json([
-            "status"=>"error",
-            "message"=>"Respuesta no encontrada"
-            
 
-        ],400);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-          $validated= $request->validate([
-                'pregunta_id' => 'required|string|min:2',
-                'respuesta'  => 'required|string|min:2',
-                'es_correcto'  => 'required|boolean',
-        ]);
-        $data= Respuesta::findOrFail($id);
-        $data -> update($validated);
-      //  $data = Account::update($validated);
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos actualizados Correctamente",
-            "data"=>$data
-
+        return response()->json([
+            "status" => "ok",
+            "data" => $data
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function update(Request $request, $id)
     {
-          $data = Respuesta::find($id);
-        if($data){
+        $validated = $request->validate([
+            'pregunta_id' => 'required|exists:preguntas,id',
+            'respuesta'   => 'required|string|min:2',
+            'es_correcto' => 'required|boolean',
+        ]);
+
+        $data = Respuesta::findOrFail($id);
+        $data->update($validated);
+
+        return response()->json([
+            "status" => "ok",
+            "message" => "Respuesta actualizada correctamente",
+            "data" => $data
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $data = Respuesta::find($id);
+
+        if ($data) {
             $data->delete();
         }
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos eliminados Correctamente"
-            
 
+        return response()->json([
+            "status" => "ok",
+            "message" => "Respuesta eliminada correctamente"
         ]);
     }
 }

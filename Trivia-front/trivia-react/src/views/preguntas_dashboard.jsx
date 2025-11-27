@@ -1,81 +1,188 @@
 import { useEffect, useState } from "react";
 
-export default function Preguntas_dashboard() {
+export default function Preguntas() {
 
     const [preguntas, setPreguntas] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [categorias, setCategorias] = useState([]);
 
-    useEffect(() => {
+    const [showForm, setShowForm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editId, setEditId] = useState(null);
 
-        const fetchPreguntas = async () => {
-            try {
-                const token = localStorage.getItem("token");
+    const [form, setForm] = useState({
+        pregunta: "",
+        categoria_id: ""
+    });
 
-                const res = await fetch("http://localhost:8000/api/preguntas", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
-                });
+    const token = localStorage.getItem("token");
 
-                const data = await res.json();
-                console.log("RAW PREGUNTAS:", data);
+    // ============================================================
+    // Cargar preguntas y categorías
+    // ============================================================
+    const loadData = async () => {
+        const r1 = await fetch("http://localhost:8000/api/preguntas", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
 
-                const list = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data.data)
-                        ? data.data
-                        : [];
+        const r2 = await fetch("http://localhost:8000/api/categorias", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
 
-                setPreguntas(list);
+        setPreguntas((await r1.json()).data);
+        setCategorias((await r2.json()).data);
+    };
 
-            } catch (error) {
-                console.error("Error cargando preguntas:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    useEffect(() => { loadData(); }, []);
 
-        fetchPreguntas();
-    }, []);
+    // ============================================================
+    // Guardar / Editar pregunta
+    // ============================================================
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg font-semibold text-gray-600 animate-pulse">
-                    Cargando preguntas...
-                </div>
-            </div>
-        );
-    }
+        const method = isEditing ? "PUT" : "POST";
+        const url = isEditing
+            ? `http://localhost:8000/api/preguntas/${editId}`
+            : `http://localhost:8000/api/preguntas`;
+
+        await fetch(url, {
+            method,
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(form)
+        });
+
+        loadData();
+        setShowForm(false);
+        setIsEditing(false);
+        setForm({ pregunta: "", categoria_id: "" });
+    };
+
+    // ============================================================
+    // Editar
+    // ============================================================
+    const handleEdit = (p) => {
+        setForm({
+            pregunta: p.pregunta,
+            categoria_id: p.categoria_id
+        });
+        setEditId(p.id);
+        setIsEditing(true);
+        setShowForm(true);
+    };
+
+    // ============================================================
+    // Eliminar
+    // ============================================================
+    const handleDelete = async (id) => {
+        if (!confirm("¿Eliminar esta pregunta?")) return;
+
+        await fetch(`http://localhost:8000/api/preguntas/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        loadData();
+    };
 
     return (
-        <div className="p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                Preguntas
-            </h2>
+        <div className="p-3">
 
-            <div className="overflow-x-auto bg-white shadow-xl rounded-xl border border-gray-200">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-sm">
-                            <th className="py-3 px-4 border-b">ID</th>
-                            <th className="py-3 px-4 border-b">Pregunta</th>
-                            <th className="py-3 px-4 border-b">Categoría ID</th>
+            <button
+                className="btn btn-sm btn-dark mb-3"
+                onClick={() => {
+                    setShowForm(!showForm);
+                    setIsEditing(false);
+                    setForm({ pregunta: "", categoria_id: "" });
+                }}
+            >
+                +
+            </button>
+
+            {/* FORMULARIO */}
+            {showForm && (
+                <div className="card p-3 mb-4">
+                    <h4>{isEditing ? "Editar Pregunta" : "Nueva Pregunta"}</h4>
+
+                    <form onSubmit={handleSubmit}>
+
+                        <label className="form-label">Pregunta</label>
+                        <input
+                            type="text"
+                            className="form-control mb-2"
+                            value={form.pregunta}
+                            onChange={(e) =>
+                                setForm({ ...form, pregunta: e.target.value })
+                            }
+                            required
+                        />
+
+                        <label className="form-label">Categoría</label>
+                        <select
+                            className="form-control mb-3"
+                            value={form.categoria_id}
+                            onChange={(e) =>
+                                setForm({ ...form, categoria_id: e.target.value })
+                            }
+                            required
+                        >
+                            <option value="">Seleccione...</option>
+                            {categorias.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button className="btn btn-success w-100">
+                            {isEditing ? "Actualizar" : "Guardar"}
+                        </button>
+
+                    </form>
+                </div>
+            )}
+
+            {/* TABLA */}
+            <table className="table table-striped text-center">
+                <thead className="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Pregunta</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {preguntas.map((p) => (
+                        <tr key={p.id}>
+                            <td>{p.id}</td>
+                            <td>{p.pregunta}</td>
+                            <td>{p.categoria?.name ?? "Sin categoría"}</td>
+
+                            <td>
+                                <button
+                                    className="btn btn-sm text-dark me-2"
+                                    style={{ background: "transparent", border: "none" }}
+                                    onClick={() => handleEdit(p)}
+                                >
+                                    ✏
+                                </button>
+
+                                <button
+                                    className="btn btn-sm text-dark"
+                                    style={{ background: "transparent", border: "none" }}
+                                    onClick={() => handleDelete(p.id)}
+                                >
+                                    🗑
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        {preguntas.map(p => (
-                            <tr key={p.id} className="hover:bg-gray-50 transition">
-                                <td className="py-3 px-4 border-b">{p.id}</td>
-                                <td className="py-3 px-4 border-b">{p.pregunta}</td>
-                                <td className="py-3 px-4 border-b">{p.categoria_id}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
 
         </div>
     );

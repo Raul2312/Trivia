@@ -14,8 +14,10 @@ Route::get('/users', [UserController::class, 'index']);
 Route::apiResource('users', UserController::class);
 
 
-Route::middleware("jwt.auth")->group(function(){
 
+Route::middleware("jwt.auth")->group(function(){
+Route::apiResource('respuestas', RespuestaController::class);
+Route::apiResource('trivias', TriviaController::class);
 Route::resource('categorias',CategoriaController::class);
 Route::resource('preguntas',PreguntaController::class);
 Route::resource('respuestas',RespuestaController::class);

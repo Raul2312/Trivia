@@ -7,113 +7,78 @@ use App\Models\Pregunta;
 
 class PreguntaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-          $data = Pregunta::with(['categoria'])->get();
+        $data = Pregunta::with('categoria')->get();
+
         return response()->json([
-            "status"=>"ok",
-            "data"=>$data
-
-
+            "status" => "ok",
+            "data"   => $data
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-            $validated= $request->validate([
-            'categoria_id'         => 'required|min:2',   
-            'pregunta'  => 'required|string|min:5',
-            
+        $validated = $request->validate([
+            'pregunta'     => 'required|string|min:2',
+            'categoria_id' => 'required|integer|exists:categorias,id'
         ]);
-        $validated['user_id']=Auth::user()->id;
+
+        // NO AGREGAR user_id, la tabla no tiene ese campo
         $data = Pregunta::create($validated);
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos Insertado Correctamente",
-            "data"=>$data
 
+        return response()->json([
+            "status"  => "ok",
+            "message" => "Pregunta creada correctamente",
+            "data"    => $data
         ]);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show($id)
     {
-         $data = Pregunta::find($id);
-        if($data){
+        $data = Pregunta::with('categoria')->find($id);
+
+        if (!$data) {
             return response()->json([
-            "status"=>"ok",
-            "message"=>"Pregunta encontrada",
-            "data"=>$data
-            
-
-        ]);
+                "status"  => "error",
+                "message" => "Pregunta no encontrada"
+            ], 404);
         }
-         return response()->json([
-            "status"=>"error",
-            "message"=>"Pregunta no encontrada"
-            
 
-        ],400);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-          $validated= $request->validate([
-            'categoria_id'         => 'required|min:2',
-            'pregunta'  => 'required|string|min:5',
-        ]);
-        $data= Pregunta::findOrFail($id);
-        $data -> update($validated);
-      //  $data = Account::update($validated);
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos actualizados Correctamente",
-            "data"=>$data
-
+        return response()->json([
+            "status" => "ok",
+            "data"   => $data
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function update(Request $request, $id)
     {
-          $data = Pregunta::find($id);
-        if($data){
+        $validated = $request->validate([
+            'pregunta'     => 'required|string|min:2',
+            'categoria_id' => 'required|integer|exists:categorias,id'
+        ]);
+
+        $data = Pregunta::findOrFail($id);
+        $data->update($validated);
+
+        return response()->json([
+            "status"  => "ok",
+            "message" => "Pregunta actualizada correctamente",
+            "data"    => $data
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $data = Pregunta::find($id);
+
+        if ($data) {
             $data->delete();
         }
-         return response()->json([
-            "status"=>"ok",
-            "message"=>"Datos eliminados Correctamente"
-            
 
+        return response()->json([
+            "status"  => "ok",
+            "message" => "Pregunta eliminada correctamente"
         ]);
     }
 }

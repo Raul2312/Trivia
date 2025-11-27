@@ -10,6 +10,7 @@ export default function Sidebar() {
                 <a href="/admin/trivias"><i className="fa-solid fa-credit-card me-2"></i>Trivias</a>
                 <a href="/admin/preguntas"><i className="fa-solid fa-credit-card me-2"></i> Preguntas</a>
                  <a href="/admin/categorias"><i className="fa-solid fa-credit-card me-2"></i>Categorias</a>
+                   <a href="/admin/respuestas"><i className="fa-solid fa-credit-card me-2"></i>Respuestas</a>
                 
             </div>
 

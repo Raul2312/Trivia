@@ -1,85 +1,206 @@
 import { useEffect, useState } from "react";
 
-export default function Respuestas_dashboard() {
+export default function Respuestas() {
 
     const [respuestas, setRespuestas] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [preguntas, setPreguntas] = useState([]);
 
-    useEffect(() => {
+    const [showForm, setShowForm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editId, setEditId] = useState(null);
 
-        const fetchRespuestas = async () => {
-            try {
-                const token = localStorage.getItem("token");
+    const [form, setForm] = useState({
+        respuesta: "",
+        es_correcto: 0,
+        pregunta_id: ""
+    });
 
-                const res = await fetch("http://localhost:8000/api/respuestas", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
-                });
+    const token = localStorage.getItem("token");
 
-                const data = await res.json();
-                console.log("RAW RESPUESTAS:", data);
+    // ============================================================
+    // Cargar respuestas y preguntas
+    // ============================================================
+    const loadData = async () => {
+        const r1 = await fetch("http://localhost:8000/api/respuestas", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
 
-                const list = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data.data)
-                        ? data.data
-                        : [];
+        const r2 = await fetch("http://localhost:8000/api/preguntas", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
 
-                setRespuestas(list);
+        setRespuestas((await r1.json()).data);
+        setPreguntas((await r2.json()).data);
+    };
 
-            } catch (error) {
-                console.error("Error cargando respuestas:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    useEffect(() => { loadData(); }, []);
 
-        fetchRespuestas();
-    }, []);
+    // ============================================================
+    // Guardar / Editar respuesta
+    // ============================================================
+    const handleSubmit = async (e) => {
+        e.preventDefault();
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg font-semibold text-gray-600 animate-pulse">
-                    Cargando respuestas...
-                </div>
-            </div>
-        );
-    }
+        const method = isEditing ? "PUT" : "POST";
+        const url = isEditing
+            ? `http://localhost:8000/api/respuestas/${editId}`
+            : `http://localhost:8000/api/respuestas`;
+
+        await fetch(url, {
+            method,
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(form)
+        });
+
+        loadData();
+        setShowForm(false);
+        setIsEditing(false);
+        setForm({ respuesta: "", es_correcto: 0, pregunta_id: "" });
+    };
+
+    // ============================================================
+    // Editar
+    // ============================================================
+    const handleEdit = (r) => {
+        setForm({
+            respuesta: r.respuesta,
+            es_correcto: r.es_correcto,
+            pregunta_id: r.pregunta_id
+        });
+        setEditId(r.id);
+        setIsEditing(true);
+        setShowForm(true);
+    };
+
+    // ============================================================
+    // Eliminar
+    // ============================================================
+    const handleDelete = async (id) => {
+        if (!confirm("¿Eliminar esta respuesta?")) return;
+
+        await fetch(`http://localhost:8000/api/respuestas/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        loadData();
+    };
 
     return (
-        <div className="p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                Respuestas
-            </h2>
+        <div className="p-3">
 
-            <div className="overflow-x-auto bg-white shadow-xl rounded-xl border border-gray-200">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-sm">
-                            <th className="py-3 px-4 border-b">ID</th>
-                            <th className="py-3 px-4 border-b">Respuesta</th>
-                            <th className="py-3 px-4 border-b">Correcta</th>
-                            <th className="py-3 px-4 border-b">Pregunta ID</th>
+            <button
+                className="btn btn-sm btn-dark mb-3"
+                onClick={() => {
+                    setShowForm(!showForm);
+                    setIsEditing(false);
+                    setForm({ respuesta: "", es_correcto: 0, pregunta_id: "" });
+                }}
+            >
+                +
+            </button>
+
+            {/* FORMULARIO */}
+            {showForm && (
+                <div className="card p-3 mb-4">
+                    <h4>{isEditing ? "Editar Respuesta" : "Nueva Respuesta"}</h4>
+
+                    <form onSubmit={handleSubmit}>
+
+                        <label className="form-label">Respuesta</label>
+                        <input
+                            type="text"
+                            className="form-control mb-2"
+                            value={form.respuesta}
+                            onChange={(e) =>
+                                setForm({ ...form, respuesta: e.target.value })
+                            }
+                            required
+                        />
+
+                        <label className="form-label">Correcta</label> <br />
+                        <input
+                            type="checkbox"
+                            className="form-check-input mb-3"
+                            checked={form.es_correcto == 1}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    es_correcto: e.target.checked ? 1 : 0
+                                })
+                            }
+                        />
+                        <br />
+
+                        <label className="form-label">Pregunta</label>
+                        <select
+                            className="form-control mb-3"
+                            value={form.pregunta_id}
+                            onChange={(e) =>
+                                setForm({ ...form, pregunta_id: e.target.value })
+                            }
+                            required
+                        >
+                            <option value="">Seleccione...</option>
+                            {preguntas.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.pregunta}
+                                </option>
+                            ))}
+                        </select>
+
+                        <button className="btn btn-success w-100">
+                            {isEditing ? "Actualizar" : "Guardar"}
+                        </button>
+
+                    </form>
+                </div>
+            )}
+
+            {/* TABLA */}
+            <table className="table table-striped text-center">
+                <thead className="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Respuesta</th>
+                        <th>Correcta</th>
+                        <th>Pregunta</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {respuestas.map((r) => (
+                        <tr key={r.id}>
+                            <td>{r.id}</td>
+                            <td>{r.respuesta}</td>
+                            <td>{r.es_correcto ? "✔" : "✖"}</td>
+                            <td>{r.pregunta?.pregunta ?? "Sin pregunta"}</td>
+
+                            <td>
+                                <button
+                                    className="btn btn-sm text-dark me-2"
+                                    style={{ background: "transparent", border: "none" }}
+                                    onClick={() => handleEdit(r)}
+                                >
+                                    ✏
+                                </button>
+
+                                <button
+                                    className="btn btn-sm text-dark"
+                                    style={{ background: "transparent", border: "none" }}
+                                    onClick={() => handleDelete(r.id)}
+                                >
+                                    🗑
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-
-                    <tbody>
-                        {respuestas.map(r => (
-                            <tr key={r.id} className="hover:bg-gray-50 transition">
-                                <td className="py-3 px-4 border-b">{r.id}</td>
-                                <td className="py-3 px-4 border-b">{r.respuesta}</td>
-                                <td className="py-3 px-4 border-b">
-                                    {r.es_correcto ? "✔️" : "❌"}
-                                </td>
-                                <td className="py-3 px-4 border-b">{r.pregunta_id}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
 
         </div>
     );

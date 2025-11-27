@@ -1,88 +1,165 @@
 import { useEffect, useState } from "react";
 
 export default function Trivias_dashboard() {
+  const [trivias, setTrivias] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
 
-    const [trivias, setTrivias] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [form, setForm] = useState({
+    fecha: "",
+    puntaje: "",
+    tiempo_total: "",
+    categoria_id: ""
+  });
 
-    useEffect(() => {
+  const token = localStorage.getItem("token");
 
-        const fetchTrivias = async () => {
-            try {
-                const token = localStorage.getItem("token");
+  // Cargar datos
+  const loadData = async () => {
+    const t = await fetch("http://localhost:8000/api/trivias", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
+    const c = await fetch("http://localhost:8000/api/categorias", {
+      headers: { "Authorization": `Bearer ${token}` }
+    });
 
-                const res = await fetch("http://localhost:8000/api/trivia", {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json"
-                    }
-                });
+    setTrivias((await t.json()).data);
+    setCategorias((await c.json()).data);
+  };
 
-                const data = await res.json();
-                console.log("RAW TRIVIAS:", data);
+  useEffect(() => { loadData(); }, []);
 
-                const list = Array.isArray(data)
-                    ? data
-                    : Array.isArray(data.data)
-                        ? data.data
-                        : [];
+  // Guardar o actualizar
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-                setTrivias(list);
+    const method = isEditing ? "PUT" : "POST";
+    const url = isEditing
+      ? `http://localhost:8000/api/trivias/${editId}`
+      : `http://localhost:8000/api/trivias`;
 
-            } catch (error) {
-                console.error("Error cargando trivias:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    await fetch(url, {
+      method,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(form)
+    });
 
-        fetchTrivias();
-    }, []);
+    loadData();
+    setShowForm(false);
+    setIsEditing(false);
+    setForm({ fecha: "", puntaje: "", tiempo_total: "", categoria_id: "" });
+  };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg font-semibold text-gray-600 animate-pulse">
-                    Cargando trivias...
-                </div>
-            </div>
-        );
-    }
+  // Editar trivia
+  const handleEdit = (t) => {
+    setForm({
+      fecha: t.fecha,
+      puntaje: t.puntaje,
+      tiempo_total: t.tiempo_total,
+      categoria_id: t.categoria_id
+    });
+    setEditId(t.id);
+    setIsEditing(true);
+    setShowForm(true);
+  };
 
-    return (
-        <div className="p-6">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                Trivias Jugadas
-            </h2>
+  // Eliminar trivia
+  const handleDelete = async (id) => {
+    if (!confirm("¿Eliminar esta trivia?")) return;
 
-            <div className="overflow-x-auto bg-white shadow-xl rounded-xl border border-gray-200">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-100 text-gray-700 uppercase text-sm">
-                            <th className="py-3 px-4 border-b">ID</th>
-                            <th className="py-3 px-4 border-b">Fecha</th>
-                            <th className="py-3 px-4 border-b">Puntaje</th>
-                            <th className="py-3 px-4 border-b">Tiempo Total</th>
-                            <th className="py-3 px-4 border-b">User ID</th>
-                            <th className="py-3 px-4 border-b">Categoria ID</th>
-                        </tr>
-                    </thead>
+    await fetch(`http://localhost:8000/api/trivias/${id}`, {
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${token}` }
+    });
 
-                    <tbody>
-                        {trivias.map(t => (
-                            <tr key={t.id} className="hover:bg-gray-50 transition">
-                                <td className="py-3 px-4 border-b">{t.id}</td>
-                                <td className="py-3 px-4 border-b">{t.fecha}</td>
-                                <td className="py-3 px-4 border-b">{t.puntaje}</td>
-                                <td className="py-3 px-4 border-b">{t.tiempo_total} seg</td>
-                                <td className="py-3 px-4 border-b">{t.user_id}</td>
-                                <td className="py-3 px-4 border-b">{t.categoria_id}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+    loadData();
+  };
 
+  return (
+    <div className="p-3">
+      <button className="btn btn-sm btn-dark mb-3"
+        onClick={() => {
+          setShowForm(!showForm);
+          setIsEditing(false);
+          setForm({ fecha: "", puntaje: "", tiempo_total: "", categoria_id: "" });
+        }}
+      >
+        +
+      </button>
+
+      {showForm && (
+        <div className="card p-3 mb-4">
+          <h4>{isEditing ? "Editar Trivia" : "Nueva Trivia"}</h4>
+          <form onSubmit={handleSubmit}>
+            <label>Fecha</label>
+            <input type="date" className="form-control mb-2"
+              value={form.fecha}
+              onChange={(e) => setForm({ ...form, fecha: e.target.value })}
+              required />
+
+            <label>Puntaje</label>
+            <input type="number" step="0.01" className="form-control mb-2"
+              value={form.puntaje}
+              onChange={(e) => setForm({ ...form, puntaje: e.target.value })}
+              required />
+
+            <label>Tiempo Total (segundos)</label>
+            <input type="number" className="form-control mb-2"
+              value={form.tiempo_total}
+              onChange={(e) => setForm({ ...form, tiempo_total: e.target.value })}
+              required />
+
+            <label>Categoría</label>
+            <select className="form-control mb-3"
+              value={form.categoria_id}
+              onChange={(e) => setForm({ ...form, categoria_id: e.target.value })}
+              required>
+              <option value="">Seleccione...</option>
+              {categorias.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+
+            <button className="btn btn-success w-100">
+              {isEditing ? "Actualizar" : "Guardar"}
+            </button>
+          </form>
         </div>
-    );
+      )}
+
+      <table className="table table-striped text-center">
+        <thead className="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Puntaje</th>
+            <th>Tiempo</th>
+            <th>Categoría</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {trivias.map((t) => (
+            <tr key={t.id}>
+              <td>{t.id}</td>
+              <td>{t.fecha}</td>
+              <td>{t.puntaje}</td>
+              <td>{t.tiempo_total}s</td>
+              <td>{t.categoria?.name}</td>
+              <td>
+                <button className="btn btn-sm me-2" onClick={() => handleEdit(t)}>✏</button>
+                <button className="btn btn-sm" onClick={() => handleDelete(t.id)}>🗑</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }

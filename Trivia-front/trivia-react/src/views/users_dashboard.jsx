@@ -108,7 +108,7 @@ export default function Users() {
                         setForm({ name: "", email: "", password: "" });
                     }}
                 >
-                    ➕
+                    +
                 </button>
 
                 {/* FORMULARIO */}
