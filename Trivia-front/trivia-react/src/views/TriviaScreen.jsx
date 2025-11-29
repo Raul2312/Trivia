@@ -1,159 +1,95 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // <-- importar useNavigate
-import "../css/trivia.css";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function TriviaScreen() {
-  const navigate = useNavigate(); // <-- inicializar navigate
+  const { id } = useParams();
+  const [categoria, setCategoria] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [respuestaSeleccionada, setRespuestaSeleccionada] = useState({});
 
-  const questions = [
-    {
-      question: "¿Cuál es el río más largo del mundo?",
-      options: ["Amazonas", "Nilo", "Yangtsé", "Misisipi"],
-      correct: 0
-    },
-    {
-      question: "¿Cuál es la capital de Francia?",
-      options: ["Berlín", "Madrid", "París", "Roma"],
-      correct: 2
-    },
-    {
-      question: "¿Qué planeta es conocido como el planeta rojo?",
-      options: ["Venus", "Marte", "Júpiter", "Saturno"],
-      correct: 1
-    }
-  ];
-
-  const [current, setCurrent] = useState(0);
-  const [selected, setSelected] = useState(null);
-  const [score, setScore] = useState(0);
-  const [finished, setFinished] = useState(false);
-  const [timer, setTimer] = useState(10);
-
-  // Temporizador
   useEffect(() => {
-    if (finished) return;
+    fetch(`http://localhost:8000/api/categoria/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCategoria(data);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error cargando categoría:", err);
+        setLoading(false);
+      });
+  }, [id]);
 
-    if (timer === 0) {
-      handleOptionClick(-1); // tiempo agotado, respuesta incorrecta
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [timer, finished]);
-
-  const handleOptionClick = (index) => {
-    if (selected !== null) return; // evitar doble click
-
-    setSelected(index);
-
-    // Cada respuesta correcta suma 10 puntos
-    if (index === questions[current].correct) {
-      setScore((prev) => prev + 10);
-    }
-
-    setTimeout(() => {
-      setSelected(null);
-      setTimer(10);
-      if (current + 1 < questions.length) {
-        setCurrent((prev) => prev + 1);
-      } else {
-        setFinished(true);
-      }
-    }, 800);
-  };
-
-  const handleRestart = () => {
-    setCurrent(0);
-    setSelected(null);
-    setScore(0);
-    setFinished(false);
-    setTimer(10);
-  };
-
-  const progressPercent = ((current + 1) / questions.length) * 100;
+  if (loading) return <h2>Cargando...</h2>;
+  if (!categoria) return <h2>No se encontró la categoría</h2>;
 
   return (
-    <div className="d-flex justify-content-center">
-    <div className="trivia-container">
-      {!finished ? (
-        <>
-          {/* Top Bar */}
-          <div className="top-bar">
-            <div className="menu-icon">
-              <div></div>
-              <div></div>
-              <div></div>
-            </div>
+    <div style={{ padding: "30px", color: "white" }}>
+      <h1 style={{ fontSize: "40px", marginBottom: "20px" }}>
+        Categoría: {categoria.nombre}
+      </h1>
 
-            <div className="progress">
-              <div
-                className="progress-fill"
-                style={{ width: `${progressPercent}%` }}
-              ></div>
-            </div>
-
-            {/* Temporizador en el círculo */}
-            <div className="question-count">{timer}</div>
-          </div>
-
-          {/* Pregunta */}
-          <div className="question-box fade-in">{questions[current].question}</div>
-
-          {/* Opciones */}
-          {questions[current].options.map((option, i) => (
-            <div
-              key={i}
-              className={`option fade-in ${
-                selected !== null
-                  ? i === questions[current].correct
-                    ? "correct"
-                    : i === selected || selected === -1
-                    ? "wrong"
-                    : ""
-                  : ""
-              }`}
-              onClick={() => handleOptionClick(i)}
-            >
-              {option}
-            </div>
-          ))}
-        </>
+      {categoria.trivias.length === 0 ? (
+        <p>No hay preguntas en esta categoría.</p>
       ) : (
-        <div className="finished-screen fade-in">
-          <h2>¡Trivia terminada!</h2>
-          <p>
-            Tu puntuación: {score} / {questions.length * 10}
-          </p>
-          <button className="restart-button" onClick={handleRestart}>
-            Volver a jugar
-          </button>
-          {/* Botón para regresar al Index */}
-          <button
-            className="index-button"
-            onClick={() => navigate("/")} // <-- aquí va la ruta del IndexScreen
+        categoria.trivias.map((pregunta) => (
+          <div
+            key={pregunta.id}
             style={{
-              marginTop: "15px",
-              padding: "10px 20px",
-              fontSize: "18px",
+              background: "#1b1464",
+              padding: "20px",
               borderRadius: "15px",
-              background: "#3a2a73",
-              color: "white",
-              cursor: "pointer",
-              border: "none",
-              transition: "0.3s",
+              marginBottom: "25px",
+              boxShadow: "0 0 15px rgba(0,0,0,0.3)"
             }}
-            onMouseOver={(e) => e.currentTarget.style.background = "#31d480"}
-            onMouseOut={(e) => e.currentTarget.style.background = "#3a2a73"}
           >
-            Mas Trivias
-          </button>
-        </div>
+            <h2 style={{ marginBottom: "15px" }}>{pregunta.pregunta}</h2>
+
+            {/* Opciones */}
+            {pregunta.opciones.map((op) => {
+              const userAnswer = respuestaSeleccionada[pregunta.id];
+
+              const isSelected = userAnswer === op.id;
+              const isCorrect = op.es_correcta === 1;
+
+              let bg = "#2a1f5c";
+
+              if (userAnswer) {
+                if (isSelected && isCorrect) bg = "#2ecc71"; // Verde
+                else if (isSelected && !isCorrect) bg = "#e74c3c"; // Rojo
+              }
+
+              return (
+                <button
+                  key={op.id}
+                  onClick={() =>
+                    setRespuestaSeleccionada({
+                      ...respuestaSeleccionada,
+                      [pregunta.id]: op.id,
+                    })
+                  }
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "12px 20px",
+                    background: bg,
+                    border: "none",
+                    borderRadius: "10px",
+                    color: "white",
+                    fontSize: "18px",
+                    marginBottom: "10px",
+                    cursor: "pointer",
+                    transition: "0.3s"
+                  }}
+                >
+                  {op.texto}
+                </button>
+              );
+            })}
+          </div>
+        ))
       )}
-    </div>
     </div>
   );
 }

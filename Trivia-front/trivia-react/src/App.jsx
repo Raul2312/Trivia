@@ -18,6 +18,8 @@ export default function App(){
         <Route path="/" element={<IndexScreen /> } />
         <Route path="/trivia" element={<TriviaScreen /> } />
         <Route path='/login' element={<Login />} />
+          <Route path='/indexscreen' element={<IndexScreen />} />  
+        <Route path="/trivia/:id" element={<TriviaScreen />} />
         <Route path='/admin' element={<Dashboard/>} >
               <Route index element={<Home/>}/>
               <Route path='users' element={<Users/>}/>
@@ -25,6 +27,7 @@ export default function App(){
                 <Route path='trivias' element={<Trivias_dashboard/>}/>
                  <Route path='categorias' element={<Categorias_dashboard/>}/>
                   <Route path='respuestas' element={<Respuestas_dashboard/>}/>
+
 
         </Route>
       </Routes>

@@ -32,7 +32,7 @@ export default function Login() {
         localStorage.setItem("user", JSON.stringify(data.user))
 
         // Opcional: redirigir al dashboard
-        navigate("/trivia")
+        navigate("/indexscreen")
       } else {
         alert("Credenciales incorrectas o error en el servidor")
       }

@@ -12,4 +12,9 @@ class Categoria extends Model
         'name',
         'descripcion',
     ];
+
+    public function trivias()
+{
+    return $this->hasMany(Trivia::class);
+}
 }
