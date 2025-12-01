@@ -12,16 +12,19 @@ use App\Http\Controllers\CategoriasTriviaController;
 
 Route::post('/login',[AuthController::class,'login']);
 Route::get('/indexscreen', [CategoriasTriviaController::class, 'categoriasConTrivias']);
+Route::resource('categorias',CategoriaController::class);
+Route::get('/categorias/{id}', [CategoriasTriviaController::class, 'show']);
+Route::resource('trivia',TriviaController::class);
+Route::apiResource('trivias', TriviaController::class);
 Route::middleware("jwt.auth")->group(function(){
-    Route::get('/categoria/{id}', [CategoriasTriviaController::class, 'show']);
+
 Route::get('/users', [UserController::class, 'index']);
 Route::apiResource('users', UserController::class);
 Route::apiResource('respuestas', RespuestaController::class);
-Route::apiResource('trivias', TriviaController::class);
-Route::resource('categorias',CategoriaController::class);
+
 Route::resource('preguntas',PreguntaController::class);
-Route::resource('respuestas',RespuestaController::class);
-Route::resource('trivia',TriviaController::class);
+
+
 
 
 });

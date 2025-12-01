@@ -52,25 +52,24 @@ class CategoriaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-          $data = Categoria::find($id);
-        if($data){
-            return response()->json([
-            "status"=>"ok",
-            "message"=>"Categoria encontrada",
-            "data"=>$data
-            
+   public function show($id)
+{
+    $categoria = Categoria::with('preguntas.respuestas')->find($id);
 
-        ]);
-        }
-         return response()->json([
-            "status"=>"error",
-            "message"=>"Categoria no encontrada"
-            
-
-        ],400);
+    if (!$categoria) {
+        return response()->json([
+            "status" => "error",
+            "message" => "Categoria no encontrada"
+        ], 404);
     }
+
+    return response()->json([
+        "status" => "ok",
+        "message" => "Categoria encontrada",
+        "data" => $categoria
+    ]);
+}
+
 
     /**
      * Show the form for editing the specified resource.

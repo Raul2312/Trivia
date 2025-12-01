@@ -19,7 +19,7 @@ export default function App(){
         <Route path="/trivia" element={<TriviaScreen /> } />
         <Route path='/login' element={<Login />} />
           <Route path='/indexscreen' element={<IndexScreen />} />  
-        <Route path="/trivia/:id" element={<TriviaScreen />} />
+        <Route path="/categorias/:id" element={<TriviaScreen />} />
         <Route path='/admin' element={<Dashboard/>} >
               <Route index element={<Home/>}/>
               <Route path='users' element={<Users/>}/>

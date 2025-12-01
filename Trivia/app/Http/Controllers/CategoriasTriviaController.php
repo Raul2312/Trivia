@@ -7,20 +7,19 @@ use Illuminate\Http\Request;
 
 class CategoriasTriviaController extends Controller
 {
-    public function categoriasConTrivias()
-    {
-        return Categoria::with('trivias')->get();
-    }
-
+   public function categoriasConTrivias()
+{
+    return Categoria::all(); // SIN WITH()
+}
     // 🔥 ESTE ES EL IMPORTANTE
     public function show($id)
-    {
-        $categoria = Categoria::with('trivias.opciones')->find($id);
+{
+    $categoria = Categoria::with('trivias.opciones')->find($id);
 
-        if (!$categoria) {
-            return response()->json(['error' => 'Categoría no encontrada'], 404);
-        }
-
-        return response()->json($categoria);
+    if (!$categoria) {
+        return response()->json(['error' => 'Categoría no encontrada'], 404);
     }
+
+    return response()->json($categoria);
+}
 }

@@ -10,6 +10,7 @@ export default function IndexScreen() {
     fetch("http://localhost:8000/api/indexscreen")
       .then((res) => res.json())
       .then((data) => {
+        console.log("Categorias:", data);
         setCategorias(data);
       })
       .catch((err) => {
@@ -18,8 +19,6 @@ export default function IndexScreen() {
   }, []);
 
   return (
-    
-    
     <div className="index-container">
       <h1>Mis Trivias</h1>
 
@@ -31,16 +30,13 @@ export default function IndexScreen() {
             <div
               key={cat.id}
               className="trivia-card"
-              onClick={() => navigate(`/trivia/${cat.id}`)}
+              onClick={() => navigate(`/categorias/${cat.id}`)}
             >
-              <span className="trivia-text">{cat.nombre}</span>
+              <span className="trivia-text">{cat.name}</span>
             </div>
           ))
         )}
       </div>
     </div>
-   
   );
-  
-  
 }
