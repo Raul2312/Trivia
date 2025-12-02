@@ -3,36 +3,30 @@ import { useEffect, useState } from "react";
 import '../css/index.css';
 
 export default function IndexScreen() {
+
   const navigate = useNavigate();
   const [categorias, setCategorias] = useState([]);
-  
-  useEffect(() => {
-    // 1. OBTENER EL TOKEN DEL LOCAL STORAGE
-    const token = localStorage.getItem("token");
 
-    // Si no hay token, redirigir inmediatamente al login (asumo que tu login es "/")
+  useEffect(() => {
+    const token = localStorage.getItem("token");
     if (!token) {
       navigate("/");
       return;
     }
 
-    // 2. HACER LA PETICIÓN CON EL TOKEN EN EL HEADER
     fetch("http://localhost:8000/api/indexscreen", {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // CLAVE: ADJUNTAR EL TOKEN EN FORMATO BEARER
-        'Authorization': `Bearer ${token}` 
+        'Authorization': `Bearer ${token}`
       }
     })
       .then((res) => {
-        // 3. MANEJAR LA REDIRECCIÓN SI EL TOKEN ES INVÁLIDO O EXPIRÓ (401)
         if (res.status === 401) {
           console.error("Token expirado o inválido. Redirigiendo al login.");
-          localStorage.removeItem("token"); // Opcional: limpiar el token inválido
-          navigate("/"); // Redirige al login (ajusta la ruta si es necesario)
-          // Lanzamos un error para detener la cadena .then()
-          throw new Error('Unauthorized'); 
+          localStorage.removeItem("token");
+          navigate("/");
+          throw new Error('Unauthorized');
         }
         return res.json();
       })
@@ -41,20 +35,73 @@ export default function IndexScreen() {
         setCategorias(data);
       })
       .catch((err) => {
-        // Ignoramos el error 'Unauthorized' que lanzamos, pero manejamos otros errores de red
         if (err.message !== 'Unauthorized') {
-             console.error("Error cargando categorías:", err);
+          console.error("Error cargando categorías:", err);
         }
       });
-  }, [navigate]); // Añadimos 'navigate' a las dependencias del useEffect
+  }, [navigate]);
 
   return (
     <div className="index-container">
+
+      {/* --- BOTÓN SUPERIOR IZQUIERDA 50x10 --- */}
+      <button
+        onClick={() => {
+          localStorage.removeItem("token");
+          navigate("/");
+        }}
+        style={{
+          background: "linear-gradient(180deg,#061223 0%, #071827 60%)",
+          border: "none",
+          color: "white",
+          width: "200px",
+          height: "30px",
+          fontSize: "20px",
+          borderRadius: "4px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          position: "absolute",
+          top: "10px",
+          left: "10px",
+          cursor: "pointer",
+          zIndex: 1000
+        }}
+      >
+        Cerrar sesion
+      </button>
+  <button
+  onClick={() => navigate("/resultados")}
+  style={{
+    background: "linear-gradient(180deg,#061223 0%, #071827 60%)",
+    color: "white",
+    border: "none",
+    width: "200px",
+    height: "35px",
+    fontSize: "18px",
+    borderRadius: "5px",
+    cursor: "pointer",
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    zIndex: 1000,
+
+    /* CENTRAR TEXTO TOTALMENTE */
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    lineHeight: "35px", // 🔥 Hace que quede EXACTO en el centro
+    textAlign: "center"
+  }}
+>
+  Ver Resultados
+</button>
+
       <h1>Mis Trivias</h1>
 
       <div className="trivia-list">
         {categorias.length === 0 ? (
-          <p>Cargando categorías...</p> // Cambié el mensaje mientras carga
+          <p>Cargando categorías...</p>
         ) : (
           categorias.map((cat) => (
             <div
@@ -67,6 +114,7 @@ export default function IndexScreen() {
           ))
         )}
       </div>
+
     </div>
   );
 }

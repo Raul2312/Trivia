@@ -10,6 +10,7 @@ import Preguntas_dashboard from './views/preguntas_dashboard'
 import Trivias_dashboard from './views/trivias_dashboard'
 import Categorias_dashboard from './views/categorias_dashboard'
 import Respuestas_dashboard from './views/respuestas_dashboard'
+import ResultsScreen from './views/ResultsScreen';
 export default function App(){
 
   return(
@@ -22,6 +23,7 @@ export default function App(){
           <Route path='/indexscreen' element={<IndexScreen />} />  
           <Route path="/categorias/:id" element={<TriviaScreen />} />
           <Route path="/trivia" element={<TriviaScreen /> } />
+          <Route path="/resultados" element={<ResultsScreen />} />
           <Route path='/admin' element={<Dashboard/>} >
               <Route index element={<Home/>}/>
               <Route path='users' element={<Users/>}/>

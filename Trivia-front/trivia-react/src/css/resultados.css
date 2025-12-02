@@ -1,0 +1,113 @@
+/* Fondo general */
+.resultados-container {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #061223 0%, #071827 60%);
+    padding: 40px;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+}
+
+/* Botón regresar */
+.btn-regresar {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 120px;
+    height: 35px;
+    background: #0c223b;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #cfe0ff;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.btn-regresar:hover {
+    background: #113256;
+    transform: scale(1.05);
+}
+
+.filtro-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto 25px auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Select de categorías */
+.select-filtro {
+    padding: 12px 15px;
+    font-size: 15px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #d9e6ff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* Hover */
+.select-filtro:hover {
+    background: rgba(255, 255, 255, 0.10);
+    transform: scale(1.03);
+}
+
+/* Opciones del select */
+.select-filtro option {
+    background: #071827;
+    color: white;
+}
+
+/* Titulo */
+.titulo {
+    margin-top: 60px;
+    margin-bottom: 25px;
+    font-size: 32px;
+}
+
+/* Tabla */
+.tabla {
+    width: 90%;
+    max-width: 1200px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    margin: auto;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Encabezados */
+.tabla th {
+    padding: 20px;
+    font-size: 18px;
+    color: #bcd0e6;
+    background: rgba(255, 255, 255, 0.06);
+    text-align: left;
+}
+
+/* Filas */
+.tabla td {
+    padding: 18px;
+    font-size: 16px;
+    color: #d9e6ff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Hover fila */
+.tabla tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* Mensaje sin datos */
+.sin-datos {
+    text-align: center;
+    padding: 30px;
+    color: #8fa4c7;
+    font-size: 18px;
+}

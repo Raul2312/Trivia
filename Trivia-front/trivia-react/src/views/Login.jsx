@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
   // Estado para el LOGIN
-  const [email, setEmail] = useState("admin@jsr.com")
+  const [email, setEmail] = useState("admin@jrs.com")
   const [password, setPassword] = useState("123456")
 
   // Estado para el REGISTRO (Nuevos)
@@ -28,9 +28,18 @@ export default function Login() {
       console.log("Respuesta Login:", data)
 
       if (res.ok && data.token) {
+
+        // Guardar datos
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
-        navigate("/indexscreen")
+
+        // 🔥🔥🔥 VALIDACIÓN PARA ADMINISTRADOR 🔥🔥🔥
+        if (email === "admin@jrs.com" && password === "123456") {
+          navigate("/admin")         // 🔥 Va al dashboard admin
+        } else {
+          navigate("/indexscreen")   // Usuarios normales
+        }
+
       } else {
         alert("Credenciales incorrectas o error en el servidor")
       }
@@ -44,7 +53,6 @@ export default function Login() {
   const handleRegister = async (e) => {
     e.preventDefault()
     try {
-      // Usamos la ruta que definimos en api.php
       const res = await fetch("http://localhost:8000/api/users", {
         method: "POST",
         headers: { "Content-type": "application/json" },
@@ -61,15 +69,12 @@ export default function Login() {
       if (res.ok) {
         alert("¡Usuario creado correctamente! Ahora inicia sesión.")
         
-        // Limpiamos los campos
         setName("")
         setRegEmail("")
         setRegPassword("")
         
-        // Cambiamos visualmente al formulario de login
         toggleForm('login')
       } else {
-        // Manejo básico de errores de validación de Laravel
         alert("Error al registrar: " + (data.message || "Verifica los datos"))
       }
 
@@ -121,6 +126,7 @@ export default function Login() {
         </ul>
 
         <div className="login-container">
+
           {/* FORMULARIO DE LOGIN */}
           <form className="login-form" id="loginForm" onSubmit={submit}>
             <h2>Bienvenido de Nuevo</h2>
@@ -159,7 +165,7 @@ export default function Login() {
             className="register-form" 
             id="registerForm" 
             style={{ display: "none" }} 
-            onSubmit={handleRegister} // Agregamos el evento onSubmit
+            onSubmit={handleRegister}
           >
             <h2>Crear Cuenta</h2>
             <p>Únete a nuestra comunidad</p>
@@ -169,7 +175,7 @@ export default function Login() {
               <input 
                 type="text" 
                 required 
-                value={name} // Vinculamos estado
+                value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
@@ -179,7 +185,7 @@ export default function Login() {
               <input 
                 type="email" 
                 required 
-                value={regEmail} // Vinculamos estado
+                value={regEmail}
                 onChange={(e) => setRegEmail(e.target.value)}
               />
             </div>
@@ -189,7 +195,7 @@ export default function Login() {
               <input 
                 type="password" 
                 required 
-                value={regPassword} // Vinculamos estado
+                value={regPassword}
                 onChange={(e) => setRegPassword(e.target.value)}
               />
             </div>
@@ -202,6 +208,7 @@ export default function Login() {
               </a>
             </div>
           </form>
+
         </div>
       </div>
     </>

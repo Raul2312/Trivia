@@ -4,6 +4,7 @@ import Header from './../layouts/Header'
 import Card from './../components/Card'
 import CreditCard from './../components/CreditCard'
 import { Outlet } from 'react-router-dom'
+import "../index.css";
 
 
 

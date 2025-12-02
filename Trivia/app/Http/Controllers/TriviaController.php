@@ -136,5 +136,31 @@ class TriviaController extends Controller
             ], 500);
         }
     }
-}
 
+    public function resultados()
+    {
+        $resultados = Trivia::with(['user:id,name','categoria:id,name'])
+            ->select('id','user_id','categoria_id','puntaje')
+            ->get();
+
+        // ⭐ AGREGADO: cálculo de porcentaje
+        $resultados = $resultados->map(function ($r) {
+
+            // Contar preguntas de la categoría
+            $totalPreguntas = \App\Models\Pregunta::where('categoria_id', $r->categoria_id)->count();
+
+            $r->total_preguntas = $totalPreguntas;
+
+            // Evitar división entre cero
+            if ($totalPreguntas > 0) {
+                $r->porcentaje = round(($r->puntaje / $totalPreguntas) * 100, 2);
+            } else {
+                $r->porcentaje = 0;
+            }
+
+            return $r;
+        });
+
+        return response()->json($resultados);
+    }
+}

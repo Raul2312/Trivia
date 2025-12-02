@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // Importamos useNavigate
+import { useParams, useNavigate } from "react-router-dom";
 import "../css/triviaScreen.css";
 
 export default function TriviaScreen() {
   const { id } = useParams();
-  const navigate = useNavigate(); // Inicializamos navigate
+  const navigate = useNavigate();
   const [categoria, setCategoria] = useState(null);
   const [preguntas, setPreguntas] = useState([]);
   const [index, setIndex] = useState(0);
@@ -18,32 +18,26 @@ export default function TriviaScreen() {
     let mounted = true;
     setLoading(true);
 
-    // 1. RECUPERAR EL TOKEN DEL LOCAL STORAGE
     const token = localStorage.getItem("token");
 
-    // Si no hay token, redirigir inmediatamente al login (asumo que tu login es "/")
     if (!token) {
       navigate("/");
       return;
     }
 
-    // 2. AÑADIR LAS CABECERAS CON EL TOKEN A LA PETICIÓN
     fetch(`http://localhost:8000/api/categorias/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        // CLAVE: ADJUNTAR EL TOKEN EN FORMATO BEARER
-        'Authorization': `Bearer ${token}` 
+        'Authorization': `Bearer ${token}`
       }
     })
       .then((res) => {
-        // MANEJAR LA REDIRECCIÓN SI EL TOKEN ES INVÁLIDO O EXPIRÓ (401)
         if (res.status === 401) {
           console.error("Token expirado o inválido. Redirigiendo al login.");
           localStorage.removeItem("token");
           navigate("/");
-          // Lanzamos un error para detener la cadena .then()
-          throw new Error('Unauthorized'); 
+          throw new Error('Unauthorized');
         }
         return res.json();
       })
@@ -53,7 +47,6 @@ export default function TriviaScreen() {
 
         setCategoria(cat);
 
-        // ... (El resto de tu lógica de normalización de preguntas se mantiene igual)
         const rawPregs = cat?.preguntas ?? cat?.trivias ?? [];
         const normalized = rawPregs.map((p) => {
           const rawRes = p.respuestas ?? p.opciones ?? [];
@@ -77,23 +70,51 @@ export default function TriviaScreen() {
         setPreguntas(normalized);
       })
       .catch((err) => {
-         // Solo mostramos errores si no es la redirección por falta de autorización
-         if (err.message !== 'Unauthorized') {
-             console.error("Error al obtener la categoría:", err);
-             setCategoria(null);
-             setPreguntas([]);
-         }
+        if (err.message !== 'Unauthorized') {
+          console.error("Error al obtener la categoría:", err);
+          setCategoria(null);
+          setPreguntas([]);
+        }
       })
       .finally(() => setLoading(false));
 
     return () => (mounted = false);
-  }, [id, navigate]); // Añadimos 'navigate' a las dependencias
+  }, [id, navigate]);
 
-  // ... (El resto del componente, funciones seleccionar, if loading/finalizado, y return JSX se mantienen igual)
-  
+  // 🔥🔥🔥 --- GUARDAR RESULTADO CUANDO FINALIZA --- 🔥🔥🔥
+  useEffect(() => {
+    if (!finalizado) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const body = {
+      categoria_id: categoria.id,
+      puntaje: puntaje,
+      fecha: new Date().toISOString().split("T")[0],
+      tiempo_total: 1
+    };
+
+    fetch("http://localhost:8000/api/trivias", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify(body)
+    })
+      .then(res => res.json())
+      .then(json => console.log("Trivia guardada:", json))
+      .catch(err => console.error("Error guardando trivia:", err));
+
+  }, [finalizado]); // 👈 SE EJECUTA AUTOMÁTICAMENTE AL TERMINAR
+
+
+  // -------------------- LÓGICA DE RESPUESTA --------------------
+
   const seleccionar = (respuesta) => {
-    // ... (Tu función seleccionar no cambia)
     if (bloqueado) return;
+
     setSeleccionId(respuesta.id);
     setBloqueado(true);
 
@@ -112,20 +133,29 @@ export default function TriviaScreen() {
     }, 900);
   };
 
+
+  // -------------------- PANTALLA DE CARGA --------------------
+
   if (loading) return <div className="loading">Cargando preguntas...</div>;
 
   if (!categoria || preguntas.length === 0)
     return <div className="loading">No hay preguntas disponibles.</div>;
 
+
+  // -------------------- PANTALLA FINAL --------------------
+
   if (finalizado) {
     return (
       <div className="trivia-container fade-in">
         <h1 className="title">{categoria.name}</h1>
+
         <div className="final-box">
           <h2>Resultado Final</h2>
+
           <p className="final-score">
             Puntaje: <strong>{puntaje}</strong> / {preguntas.length}
           </p>
+
           <button className="btn-next" onClick={() => window.location.reload()}>
             Volver a jugar
           </button>
@@ -134,49 +164,56 @@ export default function TriviaScreen() {
     );
   }
 
+
+  // -------------------- INTERFAZ PRINCIPAL --------------------
+
   const actual = preguntas[index];
 
   return (
-    <div className="trivia-container fade-in">
-      <h1 className="title">{categoria.name}</h1>
+    <div className="body-trivia">
+      <div className="trivia-container fade-in">
 
-      <div className="question-box">
-        <p className="question">
-          {index + 1}. {actual.pregunta}
-        </p>
+        <h1 className="title">{categoria.name}</h1>
 
-        <div className="options-grid">
-          {actual.respuestas.map((op) => {
-            const selected = seleccionId === op.id;
-            const correct = op.es_correcto;
+        <div className="question-box">
+          <p className="question">
+            {index + 1}. {actual.pregunta}
+          </p>
 
-            let className = "option-btn";
+          <div className="options-grid">
+            {actual.respuestas.map((op) => {
+              const selected = seleccionId === op.id;
+              const correct = op.es_correcto;
 
-            if (bloqueado) {
-              if (selected && correct) className += " correct";
-              else if (selected && !correct) className += " wrong";
-              else if (!selected && correct) className += " reveal";
-            } else if (selected) {
-              className += " selected";
-            }
+              let className = "option-btn";
 
-            return (
-              <button
-                key={op.id}
-                className={className}
-                onClick={() => seleccionar(op)}
-                disabled={bloqueado}
-              >
-                {op.texto}
-              </button>
-            );
-          })}
+              if (bloqueado) {
+                if (selected && correct) className += " correct";
+                else if (selected && !correct) className += " wrong";
+                else if (!selected && correct) className += " reveal";
+              } else if (selected) {
+                className += " selected";
+              }
+
+              return (
+                <button
+                  key={op.id}
+                  className={className}
+                  onClick={() => seleccionar(op)}
+                  disabled={bloqueado}
+                >
+                  {op.texto}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      <div className="footer-row">
-        <span className="progress">{index + 1} / {preguntas.length}</span>
-        <span className="score">Puntaje: {puntaje}</span>
+        <div className="footer-row">
+          <span className="progress">{index + 1} / {preguntas.length}</span>
+          <span className="score">Puntaje: {puntaje}</span>
+        </div>
+
       </div>
     </div>
   );
