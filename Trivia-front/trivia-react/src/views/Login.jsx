@@ -3,46 +3,83 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
+  // Estado para el LOGIN
   const [email, setEmail] = useState("admin@jsr.com")
   const [password, setPassword] = useState("123456")
 
+  // Estado para el REGISTRO (Nuevos)
+  const [name, setName] = useState("")
+  const [regEmail, setRegEmail] = useState("")
+  const [regPassword, setRegPassword] = useState("")
+
   const navigate = useNavigate()
 
+  // --- Lógica de Login ---
   const submit = async (e) => {
     e.preventDefault()
     try {
       const res = await fetch("http://localhost:8000/api/login", {
         method: "POST",
-        headers: {
-          "Content-type": "application/json"
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({ email, password })
       })
 
       const data = await res.json()
-      console.log("Respuesta:", data)
+      console.log("Respuesta Login:", data)
 
-      // Verifica si la API envió el token correctamente
       if (res.ok && data.token) {
-        // Guardar token y user en localStorage
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
-
-        // Opcional: redirigir al dashboard
         navigate("/indexscreen")
       } else {
         alert("Credenciales incorrectas o error en el servidor")
       }
-
     } catch (err) {
       console.log(err)
       alert("Error al conectar con el servidor")
     }
   }
 
+  // --- Lógica de Registro (Nueva) ---
+  const handleRegister = async (e) => {
+    e.preventDefault()
+    try {
+      // Usamos la ruta que definimos en api.php
+      const res = await fetch("http://localhost:8000/api/users", {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({
+          name: name,
+          email: regEmail,
+          password: regPassword
+        })
+      })
+
+      const data = await res.json()
+      console.log("Respuesta Registro:", data)
+
+      if (res.ok) {
+        alert("¡Usuario creado correctamente! Ahora inicia sesión.")
+        
+        // Limpiamos los campos
+        setName("")
+        setRegEmail("")
+        setRegPassword("")
+        
+        // Cambiamos visualmente al formulario de login
+        toggleForm('login')
+      } else {
+        // Manejo básico de errores de validación de Laravel
+        alert("Error al registrar: " + (data.message || "Verifica los datos"))
+      }
+
+    } catch (err) {
+      console.log(err)
+      alert("Error al intentar registrarse")
+    }
+  }
+
+  // --- Animación de cambio de formulario ---
   const toggleForm = (formType) => {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
@@ -84,6 +121,7 @@ export default function Login() {
         </ul>
 
         <div className="login-container">
+          {/* FORMULARIO DE LOGIN */}
           <form className="login-form" id="loginForm" onSubmit={submit}>
             <h2>Bienvenido de Nuevo</h2>
             <p>Ingresa a tu cuenta con estilo</p>
@@ -116,23 +154,44 @@ export default function Login() {
             </div>
           </form>
 
-          <form className="register-form" id="registerForm" style={{ display: "none" }}>
+          {/* FORMULARIO DE REGISTRO */}
+          <form 
+            className="register-form" 
+            id="registerForm" 
+            style={{ display: "none" }} 
+            onSubmit={handleRegister} // Agregamos el evento onSubmit
+          >
             <h2>Crear Cuenta</h2>
             <p>Únete a nuestra comunidad</p>
 
             <div className="input-group">
               <label>Nombre de Usuario</label>
-              <input type="text" required />
+              <input 
+                type="text" 
+                required 
+                value={name} // Vinculamos estado
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
 
             <div className="input-group">
               <label>Email</label>
-              <input type="email" required />
+              <input 
+                type="email" 
+                required 
+                value={regEmail} // Vinculamos estado
+                onChange={(e) => setRegEmail(e.target.value)}
+              />
             </div>
 
             <div className="input-group">
               <label>Contraseña</label>
-              <input type="password" required />
+              <input 
+                type="password" 
+                required 
+                value={regPassword} // Vinculamos estado
+                onChange={(e) => setRegPassword(e.target.value)}
+              />
             </div>
 
             <button type="submit">Registrarse</button>

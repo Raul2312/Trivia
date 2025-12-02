@@ -15,6 +15,10 @@ export default function Respuestas() {
         pregunta_id: ""
     });
 
+    // Estados para filtros
+    const [filtroCategoria, setFiltroCategoria] = useState("");
+    const [filtroPregunta, setFiltroPregunta] = useState("");
+
     const token = localStorage.getItem("token");
 
     // ============================================================
@@ -25,8 +29,8 @@ export default function Respuestas() {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
-        const r2 = await fetch("http://localhost:8000/api/preguntas", {
-            headers: { "Authorization": `Bearer ${token}` }
+        const r2 = await fetch("http://localhost:8000/api/preguntas?with_categoria=1", { 
+            headers: { "Authorization": `Bearer ${token}` } 
         });
 
         setRespuestas((await r1.json()).data);
@@ -160,6 +164,44 @@ export default function Respuestas() {
                 </div>
             )}
 
+            {/* FILTRO POR CATEGORÍA */}
+            <div className="mb-3">
+                <label className="form-label">Filtrar por categoría:</label>
+                <select
+                    className="form-control"
+                    value={filtroCategoria}
+                    onChange={(e) => {
+                        setFiltroCategoria(e.target.value);
+                        setFiltroPregunta(""); // reinicia el filtro de pregunta
+                    }}
+                >
+                    <option value="">Todas</option>
+                    {preguntas
+                        .map(p => p.categoria)
+                        .filter((c, index, self) => c && self.findIndex(x => x?.id === c.id) === index)
+                        .map(c => (
+                            <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                </select>
+            </div>
+
+            {/* FILTRO POR PREGUNTA */}
+            <div className="mb-3">
+                <label className="form-label">Filtrar por pregunta:</label>
+                <select
+                    className="form-control"
+                    value={filtroPregunta}
+                    onChange={(e) => setFiltroPregunta(e.target.value)}
+                >
+                    <option value="">Todas</option>
+                    {preguntas
+                        .filter(p => !filtroCategoria || p.categoria_id == filtroCategoria)
+                        .map(p => (
+                            <option key={p.id} value={p.id}>{p.pregunta}</option>
+                        ))}
+                </select>
+            </div>
+
             {/* TABLA */}
             <table className="table table-striped text-center">
                 <thead className="table-dark">
@@ -173,7 +215,12 @@ export default function Respuestas() {
                 </thead>
 
                 <tbody>
-                    {respuestas.map((r) => (
+                    {respuestas
+                        .filter(r =>
+                            (!filtroCategoria || r.pregunta?.categoria_id == filtroCategoria) &&
+                            (!filtroPregunta || r.pregunta_id == filtroPregunta)
+                        )
+                        .map((r) => (
                         <tr key={r.id}>
                             <td>{r.id}</td>
                             <td>{r.respuesta}</td>

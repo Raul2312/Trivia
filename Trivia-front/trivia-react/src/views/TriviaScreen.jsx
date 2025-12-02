@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; // Importamos useNavigate
 import "../css/triviaScreen.css";
 
 export default function TriviaScreen() {
   const { id } = useParams();
+  const navigate = useNavigate(); // Inicializamos navigate
   const [categoria, setCategoria] = useState(null);
   const [preguntas, setPreguntas] = useState([]);
   const [index, setIndex] = useState(0);
@@ -17,14 +18,42 @@ export default function TriviaScreen() {
     let mounted = true;
     setLoading(true);
 
-    fetch(`http://localhost:8000/api/categorias/${id}`)
-      .then((res) => res.json())
+    // 1. RECUPERAR EL TOKEN DEL LOCAL STORAGE
+    const token = localStorage.getItem("token");
+
+    // Si no hay token, redirigir inmediatamente al login (asumo que tu login es "/")
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    // 2. AÑADIR LAS CABECERAS CON EL TOKEN A LA PETICIÓN
+    fetch(`http://localhost:8000/api/categorias/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // CLAVE: ADJUNTAR EL TOKEN EN FORMATO BEARER
+        'Authorization': `Bearer ${token}` 
+      }
+    })
+      .then((res) => {
+        // MANEJAR LA REDIRECCIÓN SI EL TOKEN ES INVÁLIDO O EXPIRÓ (401)
+        if (res.status === 401) {
+          console.error("Token expirado o inválido. Redirigiendo al login.");
+          localStorage.removeItem("token");
+          navigate("/");
+          // Lanzamos un error para detener la cadena .then()
+          throw new Error('Unauthorized'); 
+        }
+        return res.json();
+      })
       .then((json) => {
         const cat = json?.data ?? json;
         if (!mounted) return;
 
         setCategoria(cat);
 
+        // ... (El resto de tu lógica de normalización de preguntas se mantiene igual)
         const rawPregs = cat?.preguntas ?? cat?.trivias ?? [];
         const normalized = rawPregs.map((p) => {
           const rawRes = p.respuestas ?? p.opciones ?? [];
@@ -47,16 +76,23 @@ export default function TriviaScreen() {
 
         setPreguntas(normalized);
       })
-      .catch(() => {
-        setCategoria(null);
-        setPreguntas([]);
+      .catch((err) => {
+         // Solo mostramos errores si no es la redirección por falta de autorización
+         if (err.message !== 'Unauthorized') {
+             console.error("Error al obtener la categoría:", err);
+             setCategoria(null);
+             setPreguntas([]);
+         }
       })
       .finally(() => setLoading(false));
 
     return () => (mounted = false);
-  }, [id]);
+  }, [id, navigate]); // Añadimos 'navigate' a las dependencias
 
+  // ... (El resto del componente, funciones seleccionar, if loading/finalizado, y return JSX se mantienen igual)
+  
   const seleccionar = (respuesta) => {
+    // ... (Tu función seleccionar no cambia)
     if (bloqueado) return;
     setSeleccionId(respuesta.id);
     setBloqueado(true);

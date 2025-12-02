@@ -14,6 +14,9 @@ export default function Preguntas() {
         categoria_id: ""
     });
 
+    // Nuevo estado para filtrar
+    const [filtroCategoria, setFiltroCategoria] = useState("");
+
     const token = localStorage.getItem("token");
 
     // ============================================================
@@ -144,6 +147,21 @@ export default function Preguntas() {
                 </div>
             )}
 
+            {/* FILTRO POR CATEGORÍA */}
+            <div className="mb-3">
+                <label className="form-label">Filtrar por categoría:</label>
+                <select
+                    className="form-control"
+                    value={filtroCategoria}
+                    onChange={(e) => setFiltroCategoria(e.target.value)}
+                >
+                    <option value="">Todas</option>
+                    {categorias.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                </select>
+            </div>
+
             {/* TABLA */}
             <table className="table table-striped text-center">
                 <thead className="table-dark">
@@ -156,7 +174,9 @@ export default function Preguntas() {
                 </thead>
 
                 <tbody>
-                    {preguntas.map((p) => (
+                    {preguntas
+                        .filter(p => filtroCategoria === "" || p.categoria_id == filtroCategoria)
+                        .map((p) => (
                         <tr key={p.id}>
                             <td>{p.id}</td>
                             <td>{p.pregunta}</td>

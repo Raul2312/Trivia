@@ -15,18 +15,21 @@ export default function App(){
   return(
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<IndexScreen /> } />
-        <Route path="/trivia" element={<TriviaScreen /> } />
+        <Route path="/" element={<Login /> } />
+      
         <Route path='/login' element={<Login />} />
+  
           <Route path='/indexscreen' element={<IndexScreen />} />  
-        <Route path="/categorias/:id" element={<TriviaScreen />} />
-        <Route path='/admin' element={<Dashboard/>} >
+          <Route path="/categorias/:id" element={<TriviaScreen />} />
+          <Route path="/trivia" element={<TriviaScreen /> } />
+          <Route path='/admin' element={<Dashboard/>} >
               <Route index element={<Home/>}/>
               <Route path='users' element={<Users/>}/>
-               <Route path='preguntas' element={<Preguntas_dashboard/>}/>
-                <Route path='trivias' element={<Trivias_dashboard/>}/>
-                 <Route path='categorias' element={<Categorias_dashboard/>}/>
-                  <Route path='respuestas' element={<Respuestas_dashboard/>}/>
+              <Route path='preguntas' element={<Preguntas_dashboard/>}/>
+              <Route path='trivias' element={<Trivias_dashboard/>}/>
+              <Route path='categorias' element={<Categorias_dashboard/>}/>
+              <Route path='respuestas' element={<Respuestas_dashboard/>}/>
+       
 
 
         </Route>
