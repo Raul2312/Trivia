@@ -3,10 +3,10 @@ import { useNavigate } from "react-router-dom";
 import "../css/resultados.css";
 
 export default function ResultsScreen() {
-
   const [resultados, setResultados] = useState([]);
-  const [categorias, setCategorias] = useState([]);     // ← categorías para el filtro
-  const [filtro, setFiltro] = useState("todos");        // ← valor seleccionado
+  const [categorias, setCategorias] = useState([]);
+  const [filtro, setFiltro] = useState("todos"); // filtro por categoría
+  const [busqueda, setBusqueda] = useState("");  // filtro por nombre
 
   const navigate = useNavigate();
 
@@ -25,10 +25,11 @@ export default function ResultsScreen() {
         });
 
         const data = await res.json();
-        setResultados(data);
+        const resultadosArray = data.data || data;
+        setResultados(resultadosArray);
 
-        // Sacamos categorías únicas para el select
-        const uniqueCategorias = [...new Set(data.map(r => r.categoria?.name))];
+        // Extrae categorías únicas
+        const uniqueCategorias = [...new Set(resultadosArray.map(r => r.categoria?.name))];
         setCategorias(uniqueCategorias);
 
       } catch (error) {
@@ -37,39 +38,47 @@ export default function ResultsScreen() {
     };
 
     fetchResultados();
-  }, []);
+  }, [navigate]);
 
-  // Filtrar sin borrar el select
-  const resultadosFiltrados =
-    filtro === "todos"
-      ? resultados
-      : resultados.filter(r => r.categoria?.name === filtro);
+  // FILTRO COMBINADO: por categoría y por nombre de usuario
+  const resultadosFiltrados = resultados
+    .filter(r => filtro === "todos" ? true : r.categoria?.name === filtro)
+    .filter(r => r.user?.name.toLowerCase().includes(busqueda.toLowerCase()));
 
   return (
     <div className="resultados-container">
 
-      {/* Botón regresar */}
       <button className="btn-regresar" onClick={() => navigate("/indexscreen")}>
         Regresar
       </button>
 
       <h1 className="titulo">Resultados de los Usuarios</h1>
 
-      {/* FILTRO (no mueve nada) */}
+      {/* CONTENEDOR DE FILTROS */}
       <div className="filtro-container">
+        {/* FILTRO POR CATEGORÍA */}
         <select
           className="select-filtro"
           value={filtro}
           onChange={(e) => setFiltro(e.target.value)}
         >
           <option value="todos">Todas las categorías</option>
-
           {categorias.map((cat, index) => (
             <option key={index} value={cat}>{cat}</option>
           ))}
         </select>
+
+        {/* BUSCADOR POR NOMBRE */}
+        <input
+          type="text"
+          className="select-filtro"
+          placeholder="Buscar por usuario..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
       </div>
 
+      {/* TABLA DE RESULTADOS */}
       <table className="tabla">
         <thead>
           <tr>
@@ -78,7 +87,6 @@ export default function ResultsScreen() {
             <th>Puntaje</th>
           </tr>
         </thead>
-
         <tbody>
           {resultadosFiltrados.length === 0 ? (
             <tr>
@@ -86,15 +94,15 @@ export default function ResultsScreen() {
             </tr>
           ) : (
             resultadosFiltrados.map((r) => {
-              const porcentaje =
-                r.total_preguntas && r.total_preguntas > 0
-                  ? ((r.puntaje / r.total_preguntas) * 100).toFixed(0)
-                  : 0;
+              // Calcula porcentaje de puntaje
+              const porcentaje = r.total_preguntas && r.total_preguntas > 0
+                ? ((r.puntaje / r.total_preguntas) * 100).toFixed(0)
+                : 0;
 
               return (
                 <tr key={r.id}>
-                  <td>{r.user?.name}</td>
-                  <td>{r.categoria?.name}</td>
+                  <td>{r.user?.name || "—"}</td>
+                  <td>{r.categoria?.name || "—"}</td>
                   <td>{porcentaje}%</td>
                 </tr>
               );
@@ -106,4 +114,3 @@ export default function ResultsScreen() {
     </div>
   );
 }
-
