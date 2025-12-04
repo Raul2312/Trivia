@@ -1,85 +1,107 @@
-import { useState } from 'react'
-import Card from './../components/Card'
-import CreditCard from './../components/CreditCard'
-
-
+import { useEffect, useState } from 'react';
 
 function Home() {
-   
+
+    const [totalUsuarios, setTotalUsuarios] = useState(0);
+    const [totalTrivias, setTotalTrivias] = useState(0);
+    const [categoriaMasJugada, setCategoriaMasJugada] = useState("Cargando...");
+    const [ganancias, setGanancias] = useState(0);
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        // ============================================================
+        // Obtener total de usuarios
+        // ============================================================
+        const fetchUsuarios = async () => {
+            try {
+                const res = await fetch("http://localhost:8000/api/users", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+
+                // data.data contiene los usuarios, igual que en Users.jsx
+                setTotalUsuarios((data.data?.length) || 0);
+
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        // ============================================================
+        // Obtener resultados de las trivias
+        // ============================================================
+        const fetchResultados = async () => {
+            try {
+                const res = await fetch("http://localhost:8000/api/resultados-trivia", {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const resultados = data.data || data;
+
+                setTotalTrivias(resultados.length);
+                setGanancias(resultados.length * 1000);
+
+                // Calcular categoría más jugada
+                const contador = {};
+                resultados.forEach(r => {
+                    const cat = r.categoria?.name;
+                    if (cat) contador[cat] = (contador[cat] || 0) + 1;
+                });
+
+                const catOrdenada = Object.entries(contador).sort((a, b) => b[1] - a[1])[0];
+                setCategoriaMasJugada(catOrdenada ? catOrdenada[0] : "Sin datos");
+
+            } catch (e) {
+                console.error(e);
+            }
+        };
+
+        fetchUsuarios();
+        fetchResultados();
+
+    }, []);
+
     return (
-        <>
-            <div className="content-area flex-grow-1">
+        <div className="content-area flex-grow-1 p-4">
 
-                <div className="row g-4">
+            <h2 className="fw-bold mb-4">Dashboard General</h2>
 
+            <div className="row g-4">
 
-                    <div className="col-md-4">
-                        <Card ammount={8450.75} title="Main balance" percent={5.2} />
+                <div className="col-md-3">
+                    <div className="card p-3 shadow-sm">
+                        <h6 className="fw-bold">Usuarios Registrados</h6>
+                        <p className="fs-3">{totalUsuarios}</p>
                     </div>
-
-                    {/*credit card*/}
-                    <div className="col-md-4">
-                        <CreditCard banco={"BBVA"} number={1234567890123456} person={"Raul Madrid"} fecha="18/25" />
-                    </div>
-
-                    {/*income*/}
-                    <div className="col-md-4">
-                        <Card ammount={5200.00} title="total income" percent={8.5} />
-                    </div>
-
-                    {/*total expenses*/}
-                    <div className="col-md-4">
-                        <Card ammount={3000} title="total expenses" percent={-6.2} />
-                    </div>
-
                 </div>
 
-                <div className="card-main mt-4">
-                    <h5 className="fw-bold mb-3">Recent Transfer Activity</h5>
+                <div className="col-md-3">
+                    <div className="card p-3 shadow-sm">
+                        <h6 className="fw-bold">Trivias Completadas</h6>
+                        <p className="fs-3">{totalTrivias}</p>
+                    </div>
+                </div>
 
-                    <table className="table align-middle">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Description</th>
-                                <th>Account</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                <div className="col-md-3">
+                    <div className="card p-3 shadow-sm">
+                        <h6 className="fw-bold">Categoría Más Jugada</h6>
+                        <p className="fs-5">{categoriaMasJugada}</p>
+                    </div>
+                </div>
 
-                            <tr className="recent-transfer-row">
-                                <td>Feb 5, 2025</td>
-                                <td><img src="https://i.pravatar.cc/50?img=32" /> Alex Johnson</td>
-                                <td>Savings (***5678)</td>
-                                <td>$500.00</td>
-                            </tr>
-
-                            <tr>
-                                <td>Feb 4, 2025</td>
-                                <td><i className="fa-brands fa-netflix me-2 text-danger"></i> Netflix Billing</td>
-                                <td>Billing</td>
-                                <td>$15.99</td>
-                            </tr>
-
-                            <tr className="recent-transfer-row">
-                                <td>Feb 3, 2025</td>
-                                <td><img src="https://i.pravatar.cc/50?img=14" /> John Doe</td>
-                                <td>Savings (***9876)</td>
-                                <td>$450.00</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-
+                <div className="col-md-3">
+                    <div className="card p-3 shadow-sm">
+                        <h6 className="fw-bold">Ganancias Totales</h6>
+                        <p className="fs-3">${ganancias}</p>
+                    </div>
                 </div>
 
             </div>
-
-
-
-        </>
-    )
+        </div>
+    );
 }
 
-export default Home
+export default Home;
