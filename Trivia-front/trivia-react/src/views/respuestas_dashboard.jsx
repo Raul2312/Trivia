@@ -149,11 +149,16 @@ export default function Respuestas() {
                             required
                         >
                             <option value="">Seleccione...</option>
-                            {preguntas.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                    {p.pregunta}
-                                </option>
-                            ))}
+
+                            {/* 🔥 FILTRO APLICADO EXACTAMENTE COMO PEDISTE */}
+                            {preguntas
+                                .filter(p => !filtroCategoria || p.categoria_id == filtroCategoria)
+                                .map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.pregunta}
+                                    </option>
+                                ))
+                            }
                         </select>
 
                         <button className="btn btn-success w-100">
@@ -172,7 +177,8 @@ export default function Respuestas() {
                     value={filtroCategoria}
                     onChange={(e) => {
                         setFiltroCategoria(e.target.value);
-                        setFiltroPregunta(""); // reinicia el filtro de pregunta
+                        setFiltroPregunta("");
+                        setForm({ ...form, pregunta_id: "" });
                     }}
                 >
                     <option value="">Todas</option>

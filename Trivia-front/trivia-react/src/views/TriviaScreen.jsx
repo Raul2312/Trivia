@@ -111,7 +111,7 @@ export default function TriviaScreen() {
         setSeleccionId(null);
         setBloqueado(false);
       } else setFinalizado(true);
-    }, 900);
+    }, 1500);
   };
 
   // -------------------- PANTALLA DE CARGA --------------------
